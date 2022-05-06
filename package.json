@@ -1,0 +1,24 @@
+{
+  "name": "task_api",
+  "version": "1.0.0",
+  "description": "Api only?  Yes \r Auth? jwt\r Backend? SQL",
+  "main": "index.js",
+  "scripts": {
+    "test": "jest --runInBand --detectOpenHandles"
+  },
+  "jest": {
+    "globalSetup": "./server/tests/setup.js",
+    "globalTeardown": "./server/tests/teardown.js"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "bcrypt": "^5.0.1",
+    "dotenv": "^16.0.0",
+    "jest": "^28.0.3",
+    "knex": "^2.0.0",
+    "mysql": "^2.18.1",
+    "mysql2": "^2.3.3",
+    "validator": "^13.7.0"
+  }
+}
