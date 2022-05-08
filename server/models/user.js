@@ -1,62 +1,102 @@
 const knex = require("../database/connection");
 const validator = require("validator");
+const {
+  tableExists,
+  isValidEmail,
+  INVALID_EMAIL,
+  USER_TABLE_NAME,
+  EMPTY_FIELD,
+  USER_NOT_FOUND,
+  OPERATION_FAILED,
+  INVALID_UPDATE_EMAIL,
+} = require("./helpers/consts");
 
-const TABLE_NAME = "users";
+const TABLE_NAME = USER_TABLE_NAME;
+
+const DUPLICATE_EMAIL = "Duplicate email detected";
+const INVALID_NAME = "Invalid name specified";
+const INVALID_PWD = "Invalid password specified";
 
 const User = {
   async createUser(name, email, password) {
     if (!name || !email || !password) {
-      throw Error("Incomplete values. Please specify all required values");
+      throw Error(EMPTY_FIELD);
     }
-    if (!validator.default.isEmail(email)) {
-      throw Error("Please specify a valid email");
+    if (!isValidEmail(email)) {
+      throw Error(INVALID_EMAIL);
     }
-    if (!validator.default.isAlpha(name)) {
-      throw Error("Name should contain only alphabets");
+    if (!isValidName(name)) {
+      throw Error(INVALID_NAME);
     }
-    if (!(typeof password === "string") || password.length < 4) {
-      throw Error("Password should be a string of length at least 4");
+    if (!isValidPassword(password)) {
+      throw Error(INVALID_PWD);
     }
-    if (!(await tableExists())) {
+    if (!(await tableExists(TABLE_NAME))) {
       await createUserTable();
     }
     email = email.toLowerCase();
+    var res;
     try {
-      const res = await knex(TABLE_NAME).insert({ name, email, password });
-      if (!res.length != 0 || !res[0] != 1) {
-        throw Error("Could not insert query into database");
-      }
+      res = await knex(TABLE_NAME).insert({ name, email, password });
     } catch (error) {
       if (error.errno == 1062) {
-        throw Error(`There is already a user with the email ${email}`);
+        throw Error(DUPLICATE_EMAIL);
       }
-      throw Error("Failed to complete operation", error);
+      throw Error(OPERATION_FAILED);
+    }
+    if (!res.length != 0 || !res[0] != 1) {
+      throw Error(OPERATION_FAILED);
     }
   },
   async getUser(email) {
-    if (!email || typeof email != "string" || !validator.default.isEmail(email))
-      throw Error("Please specify a valid email");
+    if (!isValidEmail(email)) throw Error(INVALID_EMAIL);
 
     var res;
     try {
-      if (!(await tableExists())) {
+      if (!(await tableExists(TABLE_NAME))) {
         await createUserTable();
       }
       res = await knex(TABLE_NAME).where("email", email.toLowerCase());
     } catch (error) {
-      throw Error("Failed to complete operation", error);
+      throw Error(OPERATION_FAILED);
     }
-    if (res.length === 0) throw Error("No such user exists");
+    if (res.length === 0) throw Error(USER_NOT_FOUND);
     return res[0];
   },
-  
+  async updateUser(email, updateObject) {
+    if (!email && !isValidEmail(email)) throw Error(INVALID_EMAIL);
+    const { name, password } = updateObject;
+    if (!name && !password) throw Error(EMPTY_FIELD);
+    if (name && !isValidName(name)) throw Error(INVALID_NAME);
+    if (password && !isValidPassword(password)) throw Error(INVALID_PWD);
+    if (updateObject.email) throw Error(INVALID_UPDATE_EMAIL);
+
+    let res;
+    try {
+      res = await knex(TABLE_NAME)
+        .where("email", email.toLowerCase())
+        .update(updateObject);
+    } catch (error) {
+      throw Error(OPERATION_FAILED);
+    }
+    if (res != 1) throw Error(USER_NOT_FOUND);
+  },
+  async deleteUser(email) {
+    if (!isValidEmail(email)) throw Error(INVALID_EMAIL);
+    let res;
+    try {
+      res = await knex(TABLE_NAME).where("email", email).del();
+    } catch (error) {
+      throw Error(OPERATION_FAILED);
+    }
+    if (res === 0) throw Error(USER_NOT_FOUND);
+  },
 };
 
-//Checks if given table exists
-const tableExists = async () => {
-  const exists = await knex.schema.hasTable(TABLE_NAME);
-  return exists;
-};
+const isValidName = (name) =>
+  typeof name === "string" && validator.default.isAlpha(name);
+const isValidPassword = (pwd) => typeof pwd === "string" && pwd.length >= 4;
+
 const createUserTable = async () => {
   await knex.schema.createTable(TABLE_NAME, function (table) {
     table.string("email").notNullable();
