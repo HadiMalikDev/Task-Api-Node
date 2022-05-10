@@ -1,0 +1,30 @@
+type Task{
+    taskId:ID!
+    title:String!
+    description:String!
+    created_at:String!
+    completed:Boolean!
+    owner:String!
+}
+
+extend type Query{
+    tasks(email:String!):[Task!]
+    task(id:ID!):Task
+}
+
+input newTask{
+    title:String!
+    description:String!
+    owner:String!
+}
+input updateFields{
+    title:String
+    description:String
+    completed:Boolean
+}
+
+extend type Mutation{
+    createTask(newTask:newTask,token:String!):Boolean
+    updateTask(id:ID!,updateFields:updateFields,token:String!):Boolean!
+    deleteTask(id:ID!,token:String!):Boolean
+}

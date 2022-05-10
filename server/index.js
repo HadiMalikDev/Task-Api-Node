@@ -1,13 +1,28 @@
-require("dotenv").config({ path: "./server/.env" });
-const knex = require("./database/connection");
-const Task = require("./models/task");
-const User = require("./models/user");
+require('dotenv').config({path:'server/.env'})
+console.log(process.env.USER)
+const express = require('express');
+const { graphqlHTTP } = require('express-graphql');
+const { makeExecutableSchema } = require('@graphql-tools/schema');
+const { loadSchemaSync } = require('@graphql-tools/load');
+const { GraphQLFileLoader } = require('@graphql-tools/graphql-file-loader');
+const graphqlResolver = require('./graphql/resolvers/index');
 
-console.log(process.env.PASS);
-const x=async()=>{
-  //  await User.createUser('Hadi','Had2@gmail.com','hahshsah');
-  //  await createTasksTable()
-    await Task.createTask('asdsad','asddas','Hadiii@gmail.com');
-}
+const server = express();
+const PORT = process.env.PORT || 5000;
 
-x()
+const schema = makeExecutableSchema({
+  typeDefs: loadSchemaSync('server/graphql/schemas/*.graphql', {
+    loaders: [new GraphQLFileLoader()],
+  }),
+  resolvers: graphqlResolver,
+});
+
+server.use(
+  '/graphql',
+  graphqlHTTP({
+    schema,
+    graphiql: true,
+  })
+);
+
+server.listen(PORT, () => console.log(`Listening on PORT ${PORT}`));

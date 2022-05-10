@@ -29,7 +29,6 @@ DELETE: /users/self
 
 GraphQL Route Name: /users/self/tasks
 
-Deleting a Task deletes it from user thing too
 Deleting a user deletes a user's tasks too
 
 Move from the ground up
@@ -42,4 +41,4 @@ every single one of them!
 
 
 
-
+now make user routes using express and jwt
