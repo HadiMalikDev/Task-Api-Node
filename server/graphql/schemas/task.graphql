@@ -8,14 +8,13 @@ type Task{
 }
 
 extend type Query{
-    tasks(email:String!):[Task!]
-    task(id:ID!):Task
+    tasks(token:String!):[Task!]
+    task(id:ID!,token:String!):Task
 }
 
 input newTask{
     title:String!
     description:String!
-    owner:String!
 }
 input updateFields{
     title:String

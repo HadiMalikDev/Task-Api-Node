@@ -22,6 +22,10 @@ const INVALID_COMPLETED = "Invalid completed specified";
 const INVALID_ID = "Invalid id specified";
 const EXTRA_PARAMETERS = "Extra parameters in update object";
 
+const DUPLICATE_EMAIL = "Duplicate email detected";
+const INVALID_NAME = "Invalid name specified";
+const INVALID_PWD = "Invalid password specified";
+
 module.exports = {
   tableExists,
   isValidEmail,
@@ -37,5 +41,8 @@ module.exports = {
   USER_NOT_FOUND,
   TASK_NOT_FOUND,
   OPERATION_FAILED,
-  EXTRA_PARAMETERS
+  EXTRA_PARAMETERS,
+  DUPLICATE_EMAIL,
+  INVALID_NAME,
+  INVALID_PWD,
 };

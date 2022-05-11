@@ -9,13 +9,12 @@ const {
   USER_NOT_FOUND,
   OPERATION_FAILED,
   INVALID_UPDATE_EMAIL,
+  DUPLICATE_EMAIL,
+  INVALID_NAME,
+  INVALID_PWD,
 } = require("./helpers/consts");
 
 const TABLE_NAME = USER_TABLE_NAME;
-
-const DUPLICATE_EMAIL = "Duplicate email detected";
-const INVALID_NAME = "Invalid name specified";
-const INVALID_PWD = "Invalid password specified";
 
 const User = {
   async createUser(name, email, password) {

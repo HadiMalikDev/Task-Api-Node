@@ -3,4 +3,5 @@ module.exports = () => {
   process.env.USER = "root";
   process.env.PASS = "root";
   process.env.dbName = "node-test";
+  process.env.JWT_SECRET="secretkey101"
 };

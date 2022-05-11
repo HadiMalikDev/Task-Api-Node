@@ -55,7 +55,7 @@ const Task = {
       res = await knex(TABLE_NAME).where("owner", owner.toLowerCase());
       return res;
     } catch (error) {
-      console.log(error)
+      console.log(error);
       throw Error(OPERATION_FAILED);
     }
   },
@@ -67,11 +67,11 @@ const Task = {
         await createTasksTable();
       }
       res = await knex(TABLE_NAME).where("taskId", taskId);
-      if (!res) return null;
-      return res.length == 0 ? null : res[0];
     } catch (error) {
       throw Error(OPERATION_FAILED);
     }
+    if (!res || !res.length) throw Error(TASK_NOT_FOUND);
+    return res[0];
   },
   async updateTask(task_id, updateObject) {
     const allowedUpdates = ["title", "description", "completed"];
@@ -111,6 +111,19 @@ const Task = {
       throw Error(OPERATION_FAILED);
     }
     if (res === 0) throw Error(TASK_NOT_FOUND);
+  },
+  async hasOwner(taskId, owner) {
+    if (!taskId || typeof taskId != "number") throw Error(INVALID_ID);
+    if (!isValidEmail(owner)) throw Error(INVALID_EMAIL);
+    try {
+      const res = await knex(TABLE_NAME)
+        .where("taskId", "=", taskId)
+        .andWhere("owner", "=", owner);
+      if (res.length === 1) return true;
+      return false;
+    } catch (error) {
+      throw Error(OPERATION_FAILED);
+    }
   },
 };
 

@@ -148,9 +148,13 @@ describe("Test Task Model", () => {
         expect(error.message).toBe(INVALID_ID);
       }
     });
-    test("null if id non existent", async () => {
-      const res = await Task.getTask(8927493);
-      expect(res).toBeNull();
+    test("Error if id if id non existent", async () => {
+      expect.assertions(1);
+      try {
+        const res = await Task.getTask(8927493);
+      } catch (error) {
+        expect(error.message).toBe(TASK_NOT_FOUND);
+      }
     });
   });
   describe("Test Get Tasks function", () => {
@@ -328,6 +332,66 @@ describe("Test Task Model", () => {
           await Task.deleteTask(6921);
         } catch (error) {
           expect(error.message).toBe(TASK_NOT_FOUND);
+        }
+      });
+    });
+  });
+  describe("Test hasOwner Task function", () => {
+    let taskOneId, taskTwoId;
+    beforeAll(async () => {
+      try {
+        await User.createUser("Hadiw", "hadi@gmail.com", "hadi12345");
+        await User.createUser("Hadiw", "hadi2@gmail.com", "hadi12345");
+        await Task.createTask("tit1", "des1", "hadi@gmail.com");
+        await Task.createTask("tit2", "des1", "hadi2@gmail.com");
+        const tasksOne = await Task.getTasks("hadi@gmail.com");
+        const tasksTwo = await Task.getTasks("hadi2@gmail.com");
+        taskOneId = tasksOne[0].taskId;
+        taskTwoId = tasksTwo[0].taskId;
+      } catch (error) {
+        console.log(error);
+      }
+    });
+    test("Return true if owner does have task of given id", async () => {
+      const res = await Task.hasOwner(taskOneId, "hadi@gmail.com");
+      expect(res).toBe(true);
+    });
+    test("Return false if owner does not have task of given id", async () => {
+      const res = await Task.hasOwner(taskTwoId, "hadi@gmail.com");
+      expect(res).toBe(false);
+    });
+    test("Return false if owner does not exist", async () => {
+      const res = await Task.hasOwner(taskOneId, "nonExistent@gmail.com");
+      expect(res).toBe(false);
+    });
+    test("Return false if task id does not exist", async () => {
+      const res = await Task.hasOwner(123, "hadi@gmail.com");
+      expect(res).toBe(false);
+    });
+
+    describe("Test parameters", () => {
+      test("Throw error if incorrect owner parameter(non-email string)", async () => {
+        expect.assertions(1);
+        try {
+          const res = await Task.hasOwner(taskOneId, "ssssss");
+        } catch (error) {
+          expect(error.message).toBe(INVALID_EMAIL);
+        }
+      });
+      test("Throw error if incorrect owner parameter(incorrect type)", async () => {
+        expect.assertions(1);
+        try {
+          const res = await Task.hasOwner(taskOneId, 123);
+        } catch (error) {
+          expect(error.message).toBe(INVALID_EMAIL);
+        }
+      });
+      test("Throw error if incorrect task id parameter(incorrect type)", async () => {
+        expect.assertions(1);
+        try {
+          const res = await Task.hasOwner("ssss", "hadi@gmail.com");
+        } catch (error) {
+          expect(error.message).toBe(INVALID_ID);
         }
       });
     });
