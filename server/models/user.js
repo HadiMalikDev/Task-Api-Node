@@ -12,6 +12,7 @@ const {
   DUPLICATE_EMAIL,
   INVALID_NAME,
   INVALID_PWD,
+  EXTRA_PARAMETERS,
 } = require("./helpers/consts");
 
 const TABLE_NAME = USER_TABLE_NAME;
@@ -63,12 +64,21 @@ const User = {
     return res[0];
   },
   async updateUser(email, updateObject) {
-    if (!email && !isValidEmail(email)) throw Error(INVALID_EMAIL);
-    const { name, password } = updateObject;
-    if (!name && !password) throw Error(EMPTY_FIELD);
-    if (name && !isValidName(name)) throw Error(INVALID_NAME);
-    if (password && !isValidPassword(password)) throw Error(INVALID_PWD);
-    if (updateObject.email) throw Error(INVALID_UPDATE_EMAIL);
+    const allowedUpdates = ["name", "password"];
+    if (!updateObject || !email) throw Error(EMPTY_FIELD);
+    if (!isValidEmail(email)) throw Error(INVALID_EMAIL);
+
+    const updateObjectKeys = Object.keys(updateObject);
+    if(updateObjectKeys.length===0) throw Error(EMPTY_FIELD);
+    const containsExtraField = updateObjectKeys.some(
+      (key) => !allowedUpdates.includes(key)
+    );
+    if (containsExtraField) throw Error(EXTRA_PARAMETERS);
+
+    if (updateObject.name && !isValidName(updateObject.name))
+      throw Error(INVALID_NAME);
+    if (updateObject.password && !isValidPassword(updateObject.password))
+      throw Error(INVALID_PWD);
 
     let res;
     try {

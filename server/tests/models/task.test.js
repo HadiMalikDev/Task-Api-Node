@@ -339,18 +339,14 @@ describe("Test Task Model", () => {
   describe("Test hasOwner Task function", () => {
     let taskOneId, taskTwoId;
     beforeAll(async () => {
-      try {
-        await User.createUser("Hadiw", "hadi@gmail.com", "hadi12345");
-        await User.createUser("Hadiw", "hadi2@gmail.com", "hadi12345");
-        await Task.createTask("tit1", "des1", "hadi@gmail.com");
-        await Task.createTask("tit2", "des1", "hadi2@gmail.com");
-        const tasksOne = await Task.getTasks("hadi@gmail.com");
-        const tasksTwo = await Task.getTasks("hadi2@gmail.com");
-        taskOneId = tasksOne[0].taskId;
-        taskTwoId = tasksTwo[0].taskId;
-      } catch (error) {
-        console.log(error);
-      }
+      await User.createUser("Hadiw", "hadi@gmail.com", "hadi12345");
+      await User.createUser("Hadiw", "hadi2@gmail.com", "hadi12345");
+      await Task.createTask("tit1", "des1", "hadi@gmail.com");
+      await Task.createTask("tit2", "des1", "hadi2@gmail.com");
+      const tasksOne = await Task.getTasks("hadi@gmail.com");
+      const tasksTwo = await Task.getTasks("hadi2@gmail.com");
+      taskOneId = tasksOne[0].taskId;
+      taskTwoId = tasksTwo[0].taskId;
     });
     test("Return true if owner does have task of given id", async () => {
       const res = await Task.hasOwner(taskOneId, "hadi@gmail.com");

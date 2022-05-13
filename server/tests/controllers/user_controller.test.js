@@ -2,6 +2,7 @@ const server = require("../../server");
 const supertest = require("supertest");
 const knex = require("../../database/connection");
 const jwt = require("jsonwebtoken");
+const bcrypt = require("bcrypt");
 const {
   USER_TABLE_NAME,
   DUPLICATE_EMAIL,
@@ -10,8 +11,10 @@ const {
   INVALID_PWD,
   EMPTY_FIELD,
   USER_NOT_FOUND,
+  EXTRA_PARAMETERS,
 } = require("../../models/helpers/consts");
 const { INVALID_TOKEN } = require("../../auth/consts");
+const User = require("../../models/user");
 const request = supertest(server);
 
 beforeAll(async () => {
@@ -232,9 +235,211 @@ describe("Test User Controller Express", () => {
         expect(response.body).toMatchObject({ error: INVALID_TOKEN });
       });
       test("Invalid token given", async () => {
-        const response = await request.get("/users/me").set('authorization','kjasdh').send();
+        const response = await request
+          .get("/users/me")
+          .set("authorization", "kjasdh")
+          .send();
         expect(response.statusCode).toBe(400);
         expect(response.body).toMatchObject({ error: INVALID_TOKEN });
+      });
+    });
+  });
+  describe("Test updateUser route", () => {
+    let token;
+    beforeAll(async () => {
+      const response = await request
+        .post("/users/login")
+        .send({ email: "unique@gmail.com", password: "Hadi12345" });
+      token = response.body.token;
+    });
+    describe("Update user if correct fields, token and values", () => {
+      test("Update all fields", async () => {
+        const response = await request
+          .patch("/users/me")
+          .set("authorization", token)
+          .send({
+            name: "uniqueName",
+            password: "sssssssssss",
+          });
+        expect(response.statusCode).toBe(200);
+        const user = await User.getUser("unique@gmail.com");
+        const updatePass = await bcrypt.compare("sssssssssss", user.password);
+        expect(updatePass).toBeTruthy();
+        expect(user.name).toBe("uniqueName");
+      });
+      test("Update only username", async () => {
+        const response = await request
+          .patch("/users/me")
+          .set("authorization", token)
+          .send({
+            name: "uniquerrrrrrName",
+          });
+        expect(response.statusCode).toBe(200);
+        const user = await User.getUser("unique@gmail.com");
+        expect(user.name).toBe("uniquerrrrrrName");
+      });
+      test("Update only password", async () => {
+        const response = await request
+          .patch("/users/me")
+          .set("authorization", token)
+          .send({
+            password: "pass1212",
+          });
+        expect(response.statusCode).toBe(200);
+        const user = await User.getUser("unique@gmail.com");
+        const updatePass = await bcrypt.compare("pass1212", user.password);
+        expect(updatePass).toBeTruthy();
+      });
+    });
+    describe("Return error code for different usecases", () => {
+      describe("Token issue", () => {
+        test("Invalid token string", async () => {
+          const response = await request
+            .patch("/users/me")
+            .set("authorization", "12121")
+            .send({
+              name: "uniquerrrrrrName",
+            });
+          expect(response.statusCode).toBe(400);
+          expect(response.body).toMatchObject({ error: INVALID_TOKEN });
+        });
+        test("Invalid token(incorrect type)", async () => {
+          const response = await request
+            .patch("/users/me")
+            .set("authorization", 12121)
+            .send({
+              name: "uniquerrrrrrName",
+            });
+          expect(response.statusCode).toBe(400);
+          expect(response.body).toMatchObject({ error: INVALID_TOKEN });
+        });
+        test("No token", async () => {
+          const response = await request.patch("/users/me").send({
+            name: "uniquerrrrrrName",
+          });
+          expect(response.statusCode).toBe(400);
+          expect(response.body).toMatchObject({ error: INVALID_TOKEN });
+        });
+      });
+      describe("Incorrect number of fields", () => {
+        test("Extra fields alongside valid fields", async () => {
+          const response = await request
+            .patch("/users/me")
+            .set("authorization", token)
+            .send({
+              name: "uniquerrrrrrName",
+              extraField: "extra",
+            });
+          expect(response.statusCode).toBe(400);
+          expect(response.body).toMatchObject({ error: EXTRA_PARAMETERS });
+        });
+        test("Only extra fields", async () => {
+          const response = await request
+            .patch("/users/me")
+            .set("authorization", token)
+            .send({
+              newField: "uniquerrrrrrName",
+              extraField: "extra",
+            });
+          expect(response.statusCode).toBe(400);
+          expect(response.body).toMatchObject({ error: EXTRA_PARAMETERS });
+        });
+        test("No fields", async () => {
+          const response = await request
+            .patch("/users/me")
+            .set("authorization", token)
+            .send({});
+          expect(response.statusCode).toBe(400);
+          expect(response.body).toMatchObject({ error: EMPTY_FIELD });
+        });
+        test("Email field detected", async () => {
+          const response = await request
+            .patch("/users/me")
+            .set("authorization", token)
+            .send({
+              name: "uniquerrrrrrName",
+              email: "new@gmail.com",
+            });
+          expect(response.statusCode).toBe(400);
+          expect(response.body).toMatchObject({ error: EXTRA_PARAMETERS });
+        });
+      });
+      describe("Invalid field types", () => {
+        test("Invalid name field", async () => {
+          const response = await request
+            .patch("/users/me")
+            .set("authorization", token)
+            .send({
+              name: 121,
+            });
+          expect(response.statusCode).toBe(400);
+          expect(response.body).toMatchObject({ error: INVALID_NAME });
+        });
+        test("Invalid password field", async () => {
+          const response = await request
+            .patch("/users/me")
+            .set("authorization", token)
+            .send({
+              password: 121345,
+            });
+          expect(response.statusCode).toBe(400);
+          expect(response.body).toMatchObject({ error: INVALID_PWD });
+        });
+      });
+    });
+  });
+  describe("Test deleteUser route", () => {
+    let token;
+    beforeAll(async () => {
+      const response = await request
+        .post("/users/login")
+        .send({ email: "unique@gmail.com", password: "pass1212" });
+      token = response.body.token;
+    });
+    test("Delete user if correct token provided", async () => {
+      expect.assertions(2);
+      const response = await request
+        .delete("/users/me")
+        .set("authorization", token)
+        .send();
+      expect(response.statusCode).toBe(200);
+      try {
+        const user = await User.getUser("unique@gmail.com");
+      } catch (error) {
+        expect(error.message).toBe(USER_NOT_FOUND);
+      }
+    });
+    describe("Return error code for different usecases", () => {
+      describe("Token issue", () => {
+        test("Old token provided(of deleted user)", async () => {
+          const response = await request
+            .delete("/users/me")
+            .set("authorization", token)
+            .send();
+          expect(response.statusCode).toBe(400);
+          expect(response.body).toMatchObject({ error: INVALID_TOKEN });
+        });
+        test("Invalid token string", async () => {
+          const response = await request
+            .delete("/users/me")
+            .set("authorization", "12121")
+            .send();
+          expect(response.statusCode).toBe(400);
+          expect(response.body).toMatchObject({ error: INVALID_TOKEN });
+        });
+        test("Invalid token(incorrect type)", async () => {
+          const response = await request
+            .delete("/users/me")
+            .set("authorization", 12121)
+            .send();
+          expect(response.statusCode).toBe(400);
+          expect(response.body).toMatchObject({ error: INVALID_TOKEN });
+        });
+        test("No token", async () => {
+          const response = await request.delete("/users/me").send();
+          expect(response.statusCode).toBe(400);
+          expect(response.body).toMatchObject({ error: INVALID_TOKEN });
+        });
       });
     });
   });

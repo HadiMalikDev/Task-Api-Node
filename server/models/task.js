@@ -39,7 +39,6 @@ const Task = {
       if (error.errno == 1452) {
         throw Error(USER_NOT_FOUND);
       }
-      console.log(error);
       throw Error(OPERATION_FAILED);
     }
   },
@@ -55,7 +54,6 @@ const Task = {
       res = await knex(TABLE_NAME).where("owner", owner.toLowerCase());
       return res;
     } catch (error) {
-      console.log(error);
       throw Error(OPERATION_FAILED);
     }
   },

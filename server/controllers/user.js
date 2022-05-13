@@ -48,13 +48,18 @@ const loginUser = async (req, res) => {
   }
 };
 const getUser = async (req, res) => {
-  return res.status(200).send({user:req.user});
+  return res.status(200).send({ user: req.user });
 };
 const updateUser = async (req, res) => {
   const updateFields = req.body;
   try {
+    if (updateFields.password) {
+      if (typeof updateFields.password != "string") throw Error(INVALID_PWD);
+      updateFields.password = await bcrypt.hash(updateFields.password, 8);
+    }
+
     await User.updateUser(req.user.email, updateFields);
-    return res.status(200);
+    return res.status(200).send();
   } catch (error) {
     const errorCode = error.message === OPERATION_FAILED ? 500 : 400;
     return res.status(errorCode).json({ error: error.message });
@@ -63,7 +68,7 @@ const updateUser = async (req, res) => {
 const deleteUser = async (req, res) => {
   try {
     await User.deleteUser(req.user.email);
-    return res.status(200);
+    return res.status(200).send();
   } catch (error) {
     const errorCode = error.message === OPERATION_FAILED ? 500 : 400;
     return res.status(errorCode).json({ error: error.message });

@@ -18,8 +18,6 @@ const verifyToken = async (token) => {
   }
   if (!isValidEmail(email)) throw Error(INVALID_TOKEN);
   const user = await User.getUser(email);
-  if (!user) throw Error(INVALID_TOKEN);
-
   return user;
 };
 

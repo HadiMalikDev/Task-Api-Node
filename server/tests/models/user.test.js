@@ -220,7 +220,7 @@ describe("Test User Model", () => {
               password: "adssssss",
             });
           } catch (error) {
-            expect(error.message).toBe(INVALID_EMAIL);
+            expect(error.message).toBe(EMPTY_FIELD);
           }
         });
         test("No updation object specified", async () => {
@@ -236,7 +236,7 @@ describe("Test User Model", () => {
           try {
             await User.updateUser();
           } catch (error) {
-            expect(error.message).toBe(INVALID_EMAIL);
+            expect(error.message).toBe(EMPTY_FIELD);
           }
         });
       });
