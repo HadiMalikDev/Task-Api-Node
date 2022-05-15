@@ -6,10 +6,18 @@ type Task{
     completed:Boolean!
     owner:String!
 }
+type Tasks{
+    tasks:[Task]!
+}
+type OperationFailed{
+    message:String!
+}
+union TasksResult=Tasks|OperationFailed
+union TaskResult=Task|OperationFailed
 
 extend type Query{
-    tasks(token:String!):[Task!]
-    task(id:ID!,token:String!):Task
+    tasks(token:String!):TasksResult!
+    task(id:Int!,token:String!):TaskResult!
 }
 
 input newTask{
@@ -21,9 +29,13 @@ input updateFields{
     description:String
     completed:Boolean
 }
+type mutationResult{
+    success:Boolean!
+}
+union mutationResultUnion=mutationResult|OperationFailed
 
 extend type Mutation{
-    createTask(newTask:newTask,token:String!):Boolean
-    updateTask(id:ID!,updateFields:updateFields,token:String!):Boolean!
-    deleteTask(id:ID!,token:String!):Boolean
+    createTask(newTask:newTask,token:String!):mutationResultUnion!
+    updateTask(id:Int!,updateFields:updateFields,token:String!):mutationResultUnion!
+    deleteTask(id:Int!,token:String!):mutationResultUnion!
 }

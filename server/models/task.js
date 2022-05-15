@@ -45,7 +45,6 @@ const Task = {
   async getTasks(owner) {
     if (!owner) throw Error(EMPTY_FIELD);
     if (!isValidEmail(owner)) throw Error(INVALID_EMAIL);
-
     var res;
     try {
       if (!(await tableExists(TABLE_NAME))) {
