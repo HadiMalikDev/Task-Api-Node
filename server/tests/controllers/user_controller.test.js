@@ -1,5 +1,6 @@
 const server = require("../../server");
 const supertest = require("supertest");
+const request = supertest(server);
 const knex = require("../../database/connection");
 const jwt = require("jsonwebtoken");
 const bcrypt = require("bcrypt");
@@ -15,7 +16,7 @@ const {
 } = require("../../models/helpers/consts");
 const { INVALID_TOKEN } = require("../../auth/consts");
 const User = require("../../models/user");
-const request = supertest(server);
+
 
 beforeAll(async () => {
   await knex(USER_TABLE_NAME).del();

@@ -7,8 +7,6 @@ const graphqlResolver = require("./graphql/resolvers/index");
 const userRouter = require("./routers/user");
 
 const server = express();
-const PORT = process.env.PORT || 5000;
-
 const schema = makeExecutableSchema({
   typeDefs: loadSchemaSync("server/graphql/schemas/*.graphql", {
     loaders: [new GraphQLFileLoader()],
