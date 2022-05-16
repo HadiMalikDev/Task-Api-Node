@@ -1,5 +1,4 @@
 const knex = require("../database/connection");
-const validator = require("validator");
 const {
   tableExists,
   isValidEmail,
@@ -8,7 +7,6 @@ const {
   EMPTY_FIELD,
   OPERATION_FAILED,
   USER_NOT_FOUND,
-  INVALID_UPDATE_EMAIL,
   INVALID_TITLE,
   INVALID_DESCRIPTION,
   INVALID_COMPLETED,
