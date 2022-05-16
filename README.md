@@ -5,10 +5,10 @@
   It showcases knowledge about:
   - Express
   - GraphQL
-  - Jest
+  - Jest(100 Tests, more than 1k lines of test code)
   - JWT
   - Knex
-  - MySQL(100 Tests, more than 1k lines of test code)
+  - MySQL
  
 ## Description
   Users can perform CRUD operations on their accounts using REST Api. They can then perform CRUD operations on tasks using GraphQL. 
