@@ -6,11 +6,13 @@ const auth = async (req, res, next) => {
   const token = req.headers.authorization;
   if (!token) return res.status(400).json({ error: INVALID_TOKEN });
   try {
-    const owner = await authh.verifyToken(token);
-    req.user = owner;
+    const owner = await authh.getTokenEmail(token);
+    if (!owner) throw Error(INVALID_TOKEN);
+    req.user = {};
+    req.user.email = owner;
     next();
   } catch (error) {
-    if (error.message === INVALID_TOKEN || error.message===USER_NOT_FOUND)
+    if (error.message === INVALID_TOKEN || error.message === USER_NOT_FOUND)
       return res.status(400).json({ error: INVALID_TOKEN });
     return res.status(500).json({ error: AUTH_FAILED });
   }

@@ -17,7 +17,6 @@ const {
 const { INVALID_TOKEN } = require("../../auth/consts");
 const User = require("../../models/user");
 
-
 beforeAll(async () => {
   await knex(USER_TABLE_NAME).del();
   const res = await knex.select().from(USER_TABLE_NAME);

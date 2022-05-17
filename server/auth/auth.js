@@ -1,4 +1,5 @@
 const jwt = require("jsonwebtoken");
+const { getEmail } = require("../cache/redis");
 const { isValidEmail } = require("../models/helpers/consts");
 const User = require("../models/user");
 const { INVALID_TOKEN } = require("./consts");
@@ -20,5 +21,16 @@ const verifyToken = async (token) => {
   const user = await User.getUser(email);
   return user;
 };
+const getTokenEmail = async (token) => {
+  let email = await getEmail(token);
+  if (!email) {
+    const owner = await verifyToken(token);
+    email = owner.email;
+    try {
+      await setEmailForToken(token, email);
+    } catch (error) {}
+  }
+  return email;
+};
 
-module.exports = { generateToken, verifyToken };
+module.exports = { generateToken, getTokenEmail, verifyToken };
