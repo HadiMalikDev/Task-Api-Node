@@ -13,8 +13,8 @@ const schema = makeExecutableSchema({
   }),
   resolvers: graphqlResolver,
 });
-server.use(express.json())
-server.use(userRouter)
+server.use(express.json());
+server.use(userRouter);
 server.use(
   "/graphql",
   graphqlHTTP({
