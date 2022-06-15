@@ -5,8 +5,9 @@ const {
   USER_NOT_FOUND,
   INVALID_PWD,
 } = require("../models/helpers/consts");
-const { generateToken } = require("../auth/auth");
+const { generateToken, verifyToken, getTokenEmail, generateVerificationToken } = require("../auth/auth");
 const bcrypt = require("bcrypt");
+const { sendRegistrationEmail } = require("../utils/mailer");
 
 const registerUser = async (req, res) => {
   const { name, email, password } = req.body;
@@ -17,8 +18,11 @@ const registerUser = async (req, res) => {
   try {
     const encryptedPass = await bcrypt.hash(password, 8);
     await User.createUser(name, email, encryptedPass);
-
-    const token = generateToken(email);
+    const token = generateVerificationToken(email);
+    await sendRegistrationEmail(
+      `http://${req.headers.host}/users/verify?token=${token}`,
+      email
+    );
     return res.status(201).json({ token });
   } catch (error) {
     if (error.message === OPERATION_FAILED)
@@ -37,6 +41,7 @@ const loginUser = async (req, res) => {
       return res.status(401).json({ error: USER_NOT_FOUND });
 
     const token = generateToken(email);
+
     return res.status(200).json({ token: token });
   } catch (error) {
     let errorCode;
@@ -74,5 +79,24 @@ const deleteUser = async (req, res) => {
     return res.status(errorCode).json({ error: error.message });
   }
 };
-
-module.exports = { registerUser, loginUser, getUser, updateUser, deleteUser };
+const verifyUser = async (req, res) => {
+  try {
+    const token = req.query.token;
+    if (!token) return res.status(400).json({ error: EMPTY_FIELD });
+    const user = await verifyToken(token);
+    await User.updateUser(user.email, { isVerified: true });
+    return res.status(200).json({ message: "Email successfully verified" });
+  } catch (error) {
+    console.log(error)
+    const errorCode = error.message === OPERATION_FAILED ? 500 : 400;
+    return res.status(errorCode).json({ error: error.message });
+  }
+};
+module.exports = {
+  registerUser,
+  loginUser,
+  getUser,
+  updateUser,
+  deleteUser,
+  verifyUser,
+};

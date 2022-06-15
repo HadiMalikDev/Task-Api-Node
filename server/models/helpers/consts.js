@@ -24,6 +24,7 @@ const EXTRA_PARAMETERS = "Extra parameters in update object";
 
 const DUPLICATE_EMAIL = "Duplicate email detected";
 const INVALID_NAME = "Invalid name specified";
+const INVALID_VERIFIED="Invalid 'verified' parameter type"
 const INVALID_PWD = "Invalid password specified";
 
 module.exports = {
@@ -35,6 +36,7 @@ module.exports = {
   INVALID_DESCRIPTION,
   INVALID_COMPLETED,
   INVALID_ID,
+  INVALID_VERIFIED,
   USER_TABLE_NAME,
   TASK_TABLE_NAME,
   EMPTY_FIELD,

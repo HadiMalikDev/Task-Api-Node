@@ -13,6 +13,7 @@ const {
   INVALID_NAME,
   INVALID_PWD,
   EXTRA_PARAMETERS,
+  INVALID_VERIFIED,
 } = require("./helpers/consts");
 
 const TABLE_NAME = USER_TABLE_NAME;
@@ -32,6 +33,7 @@ const User = {
       throw Error(INVALID_PWD);
     }
     if (!(await tableExists(TABLE_NAME))) {
+      console.log("table doesnt exist")
       await createUserTable();
     }
     email = email.toLowerCase();
@@ -64,12 +66,12 @@ const User = {
     return res[0];
   },
   async updateUser(email, updateObject) {
-    const allowedUpdates = ["name", "password"];
+    const allowedUpdates = ["name", "password", "isVerified"];
     if (!updateObject || !email) throw Error(EMPTY_FIELD);
     if (!isValidEmail(email)) throw Error(INVALID_EMAIL);
 
     const updateObjectKeys = Object.keys(updateObject);
-    if(updateObjectKeys.length===0) throw Error(EMPTY_FIELD);
+    if (updateObjectKeys.length === 0) throw Error(EMPTY_FIELD);
     const containsExtraField = updateObjectKeys.some(
       (key) => !allowedUpdates.includes(key)
     );
@@ -79,13 +81,15 @@ const User = {
       throw Error(INVALID_NAME);
     if (updateObject.password && !isValidPassword(updateObject.password))
       throw Error(INVALID_PWD);
-
+    if(updateObject.isVerified && typeof updateObject.isVerified!='boolean')
+      throw Error(INVALID_VERIFIED)
     let res;
     try {
       res = await knex(TABLE_NAME)
         .where("email", email.toLowerCase())
         .update(updateObject);
     } catch (error) {
+      console.log(error)
       throw Error(OPERATION_FAILED);
     }
     if (res != 1) throw Error(USER_NOT_FOUND);
@@ -113,6 +117,7 @@ const createUserTable = async () => {
     table.primary("email");
     table.string("name").checkLength(">", 0);
     table.string("password").checkLength(">", 4);
+    table.boolean("isVerified").notNullable().defaultTo("false");
   });
 };
 module.exports = User;

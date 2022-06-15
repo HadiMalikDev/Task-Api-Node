@@ -18,6 +18,7 @@ const { INVALID_TOKEN } = require("../../auth/consts");
 const User = require("../../models/user");
 
 beforeAll(async () => {
+  jest.mock('@sendgrid/mail');
   await knex(USER_TABLE_NAME).del();
   const res = await knex.select().from(USER_TABLE_NAME);
 });
@@ -30,6 +31,7 @@ describe("Test User Controller Express", () => {
         email: "unique@gmail.com",
         password: "Hadi12345",
       });
+      console.log(response.body);
       expect(response.statusCode).toBe(201);
       expect(response.body).toHaveProperty("token");
     });
@@ -216,17 +218,22 @@ describe("Test User Controller Express", () => {
         .post("/users/login")
         .send({ email: "unique@gmail.com", password: "Hadi12345" });
       token = response.body.token;
+      const verifyUser=await request.get(`/users/verify?token=${token}`).send();
+      console.log(verifyUser.body);
+      expect(verifyUser.statusCode).toBe(200);
+
     });
-    test("Get user if valid token given", async () => {
+    test("Get user if valid token given and verified user", async () => {
       const response = await request
         .get("/users/me")
         .set("authorization", token)
         .send();
+      console.log(response.body)
       expect(response.statusCode).toBe(200);
       expect(response.body).toHaveProperty("user");
       const user = response.body.user;
       const decryptedEmail = jwt.verify(token, process.env.JWT_SECRET);
-      expect(decryptedEmail).toBe(user.email);
+      expect(decryptedEmail.email).toBe(user.email);
     });
     describe("Return proper errors for different usecases", () => {
       test("No token given", async () => {

@@ -1,4 +1,4 @@
-const { verifyToken } = require("../../auth/auth");
+const { verifyToken, getTokenEmail } = require("../../auth/auth");
 const { INVALID_OPERATION } = require("../../auth/consts");
 const { getEmail, setEmailForToken } = require("../../cache/redis");
 const Task = require("../../models/task");
@@ -72,18 +72,5 @@ const taskResolvers = {
   },
 };
 
-//Checks whether the token is in the redis cache. If not, then it queries the main db and updates cache
-//Utilizing cache resulted in 3x improvement 0-0
-const getTokenEmail = async (token) => {
-  let email = await getEmail(token);
-  if (!email) {
-    const owner = await verifyToken(token);
-    email = owner.email;
-    try {
-      await setEmailForToken(token, email);
-    } catch (error) {}
-  }
-  return email;
-};
 
 module.exports = taskResolvers;

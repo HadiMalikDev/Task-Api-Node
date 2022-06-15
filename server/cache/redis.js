@@ -3,6 +3,7 @@ const REDIS_OPERATION_FAILED = "Operation failed";
 const redis = new Redis(process.env.REDIS_PORT, process.env.REDIS_HOST, {
   password: process.env.REDIS_PASS,
 });
+
 //In seconds
 //Equals one day
 const TimeToExpire = 24 * 60 * 60;
@@ -24,12 +25,16 @@ const setEmailForToken = async (token, email) => {
       typeof email != "string"
     )
       throw Error(REDIS_OPERATION_FAILED);
-    const res = await redis.set(token, email,'ex',TimeToExpire);
+    const res = await redis.set(token, email, "ex", TimeToExpire);
     if (res != "OK") throw Error(REDIS_OPERATION_FAILED);
   } catch (error) {
     throw Error(REDIS_OPERATION_FAILED);
   }
 };
+redis.on("error", (error) => {
+  console.log(error);
+  console.log(process.env.REDIS_HOST)
+});
 const clearCache = async () => {
   await redis.flushdb();
 };

@@ -12,6 +12,7 @@ const auth = async (req, res, next) => {
     req.user.email = owner;
     next();
   } catch (error) {
+    console.log(error)
     if (error.message === INVALID_TOKEN || error.message === USER_NOT_FOUND)
       return res.status(400).json({ error: INVALID_TOKEN });
     return res.status(500).json({ error: AUTH_FAILED });
