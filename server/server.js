@@ -14,7 +14,7 @@ const schema = makeExecutableSchema({
   }),
   resolvers: graphqlResolver,
 });
-server.use(cors());
+server.options('*', cors())
 server.use(express.json());
 server.use(userRouter);
 server.use(
