@@ -3,6 +3,7 @@ const { graphqlHTTP } = require("express-graphql");
 const { makeExecutableSchema } = require("@graphql-tools/schema");
 const { loadSchemaSync } = require("@graphql-tools/load");
 const { GraphQLFileLoader } = require("@graphql-tools/graphql-file-loader");
+const cors = require("cors");
 const graphqlResolver = require("./graphql/resolvers/index");
 const userRouter = require("./routers/user");
 
@@ -13,6 +14,7 @@ const schema = makeExecutableSchema({
   }),
   resolvers: graphqlResolver,
 });
+server.use(cors());
 server.use(express.json());
 server.use(userRouter);
 server.use(
