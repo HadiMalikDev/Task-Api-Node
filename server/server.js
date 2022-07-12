@@ -3,7 +3,6 @@ const { graphqlHTTP } = require("express-graphql");
 const { makeExecutableSchema } = require("@graphql-tools/schema");
 const { loadSchemaSync } = require("@graphql-tools/load");
 const { GraphQLFileLoader } = require("@graphql-tools/graphql-file-loader");
-const cors = require("cors");
 const graphqlResolver = require("./graphql/resolvers/index");
 const userRouter = require("./routers/user");
 
@@ -14,12 +13,20 @@ const schema = makeExecutableSchema({
   }),
   resolvers: graphqlResolver,
 });
-server.use(
-  cors({
-    origin: "http://localhost:3000",
-    credentials:true
-  })
-);
+
+server.use((req, res, next) => {
+  res.header("Access-Control-Allow-Origin", "*");
+  res.header(
+    "Access-Control-Allow-Headers",
+    "Origin, X-Requested, Content-Type, Accept Authorization"
+  );
+  if (req.method === "OPTIONS") {
+    res.header("Access-Control-Allow-Methods", "POST, PUT, PATCH, GET, DELETE");
+    return res.status(200).json({});
+  }
+  next();
+});
+
 server.use(express.json());
 server.use(userRouter);
 server.use(
