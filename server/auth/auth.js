@@ -5,7 +5,7 @@ const User = require("../models/user");
 const { INVALID_TOKEN, EXPIRED_TOKEN, UNVERIFIED_USER } = require("./consts");
 
 const generateToken = (email) => {
-  const token = jwt.sign({email}, process.env.JWT_SECRET);
+  const token = jwt.sign({ email }, process.env.JWT_SECRET);
   return token;
 };
 const generateVerificationToken = (email) => {
@@ -33,7 +33,7 @@ const getTokenEmail = async (token) => {
   let email = await getEmail(token);
   if (!email) {
     const owner = await verifyToken(token);
-    if (!owner.isVerified) throw Error(UNVERIFIED_USER);
+    //   if (!owner.isVerified) throw Error(UNVERIFIED_USER); #Removed email validation for now
     email = owner.email;
     try {
       await setEmailForToken(token, email);
