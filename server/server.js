@@ -14,7 +14,12 @@ const schema = makeExecutableSchema({
   }),
   resolvers: graphqlResolver,
 });
-server.options('*', cors())
+server.use(
+  cors({
+    origin: "http://localhost:3000",
+    credentials:true
+  })
+);
 server.use(express.json());
 server.use(userRouter);
 server.use(
