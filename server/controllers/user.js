@@ -19,10 +19,10 @@ const registerUser = async (req, res) => {
     const encryptedPass = await bcrypt.hash(password, 8);
     await User.createUser(name, email, encryptedPass);
     const token = generateVerificationToken(email);
-    await sendRegistrationEmail(
-      `http://${req.headers.host}/users/verify?token=${token}`,
-      email
-    );
+    // await sendRegistrationEmail(
+    //   `http://${req.headers.host}/users/verify?token=${token}`,
+    //   email
+    // );
     return res.status(201).json({ token });
   } catch (error) {
     if (error.message === OPERATION_FAILED)

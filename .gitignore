@@ -1,3 +1,5 @@
 node_modules
+server/.env
+server/dev.env
 knexfile.js
 migrations

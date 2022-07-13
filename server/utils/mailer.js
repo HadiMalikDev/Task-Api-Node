@@ -12,6 +12,7 @@ const sendRegistrationEmail = async (link, recipient) => {
     };
     await sgMail.send(email);
   } catch (error) {
+    console.log(error)
     throw Error(EMAIL_SEND_ERROR);
   }
 };
